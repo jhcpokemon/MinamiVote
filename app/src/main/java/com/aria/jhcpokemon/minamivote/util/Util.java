@@ -1,8 +1,8 @@
 package com.aria.jhcpokemon.minamivote.util;
 
 import android.content.Context;
-
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.aria.jhcpokemon.minamivote.model.Character;
 
 import java.io.BufferedReader;
@@ -15,9 +15,9 @@ import java.util.List;
  * Created by jhcpokemon on 05/28/15.
  */
 public class Util {
-    public static List<com.aria.jhcpokemon.minamivote.model.Character> getCharacterList(Context context) {
+    public static List<Character> getCharacterList(Context context) {
         String jsonData = getJsonData(context);
-        return JSON.parseArray(jsonData, Character.class);
+        return JSON.parseObject(jsonData,new TypeReference<List<Character>>(){});
     }
 
     public static String getJsonData(Context context) {

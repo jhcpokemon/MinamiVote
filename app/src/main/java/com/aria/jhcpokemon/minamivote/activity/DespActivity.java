@@ -3,9 +3,7 @@ package com.aria.jhcpokemon.minamivote.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,34 +11,16 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.aria.jhcpokemon.minamivote.R;
 import com.aria.jhcpokemon.minamivote.model.Character;
-import com.aria.jhcpokemon.minamivote.weibo.AccessTokenKeeper;
-import com.aria.jhcpokemon.minamivote.weibo.Constants;
-import com.sina.weibo.sdk.api.TextObject;
-import com.sina.weibo.sdk.api.WeiboMessage;
-import com.sina.weibo.sdk.api.share.BaseResponse;
-import com.sina.weibo.sdk.api.share.IWeiboHandler;
-import com.sina.weibo.sdk.api.share.IWeiboShareAPI;
-import com.sina.weibo.sdk.api.share.SendMessageToWeiboRequest;
-import com.sina.weibo.sdk.api.share.WeiboShareSDK;
-import com.sina.weibo.sdk.auth.AuthInfo;
-import com.sina.weibo.sdk.auth.Oauth2AccessToken;
-import com.sina.weibo.sdk.auth.WeiboAuthListener;
-import com.sina.weibo.sdk.auth.sso.SsoHandler;
-import com.sina.weibo.sdk.exception.WeiboException;
 
-public class DespActivity extends AppCompatActivity implements IWeiboHandler.Response {
+public class DespActivity extends AppCompatActivity{
     private ImageView imageView;
     private TextView textView;
     private Button button;
     private Character character;
     private ScrollView scrollView;
-    private AuthInfo authInfo;
-    private SsoHandler ssoHandler;
-    private IWeiboShareAPI weiboShareAPI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,17 +37,16 @@ public class DespActivity extends AppCompatActivity implements IWeiboHandler.Res
         imageView.setImageResource(getImgId(this));
         scrollView = (ScrollView) findViewById(R.id.scroll_view);
         textView.setText(character.getDescription());
-        authInfo = new AuthInfo(this, Constants.APP_KEY, Constants.REDIRECT_URL, Constants.SCOPE);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (weiboShareAPI != null) {
-                    weiboShareAPI = WeiboShareSDK.createWeiboAPI(DespActivity.this, Constants.APP_KEY);
-                    weiboShareAPI.registerApp();
-                    sendSingleMessage();
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT,"我投了"+character.getName()+"一票!");
+                startActivity(Intent.createChooser(intent,getResources().getText(R.string.intent_title)));
                 }
-            }
-        });
+            });
     }
 
     @Override
@@ -87,10 +66,6 @@ public class DespActivity extends AppCompatActivity implements IWeiboHandler.Res
         switch (id) {
             case R.id.action_about:
                 return true;
-            case R.id.action_login:
-                ssoHandler = new SsoHandler(DespActivity.this, authInfo);
-                ssoHandler.authorize(new AuthListener());
-                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -102,70 +77,5 @@ public class DespActivity extends AppCompatActivity implements IWeiboHandler.Res
             e.printStackTrace();
             return -1;
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (data != null) {
-            ssoHandler.authorizeCallBack(requestCode, resultCode, data);
-        }
-    }
-
-    private class AuthListener implements WeiboAuthListener {
-        @Override
-        public void onComplete(Bundle bundle) {
-            Oauth2AccessToken token = Oauth2AccessToken.parseAccessToken(bundle);
-            if (token != null && token.isSessionValid()) {
-                AccessTokenKeeper.writeAccessToken(DespActivity.this, token);
-            } else {
-                String code = bundle.getString("code", "");
-                Toast.makeText(DespActivity.this, code, Toast.LENGTH_LONG).show();
-            }
-        }
-
-        @Override
-        public void onWeiboException(WeiboException e) {
-            Toast.makeText(DespActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        public void onCancel() {
-            Toast.makeText(DespActivity.this, R.string.login_canceled, Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void sendSingleMessage() {
-        if (weiboShareAPI == null) {
-            Toast.makeText(DespActivity.this, "请先在右上角登陆", Toast.LENGTH_SHORT).show();
-        } else {
-            WeiboMessage weiboMessage = new WeiboMessage();
-            weiboMessage.mediaObject = getTextObject();
-            SendMessageToWeiboRequest request = new SendMessageToWeiboRequest();
-            request.transaction = String.valueOf(System.currentTimeMillis());
-            request.message = weiboMessage;
-            weiboShareAPI.sendRequest(DespActivity.this, request);
-        }
-    }
-
-    private TextObject getTextObject() {
-        TextObject textObject = new TextObject();
-        textObject.text = getSharedText();
-        return textObject;
-    }
-
-    private String getSharedText() {
-        return "投给了" + character.getName() + "一票!";
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        weiboShareAPI.handleWeiboResponse(intent, this);
-    }
-
-    @Override
-    public void onResponse(BaseResponse response) {
-        Toast.makeText(DespActivity.this, response.errCode, Toast.LENGTH_SHORT).show();
     }
 }

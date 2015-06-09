@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.aria.jhcpokemon.minamivote.R;
 import com.aria.jhcpokemon.minamivote.model.Character;
@@ -65,7 +66,7 @@ public class DespActivity extends AppCompatActivity{
         //noinspection SimplifiableIfStatement
         switch (id) {
             case R.id.action_about:
-                return true;
+                Toast.makeText(this, "Version:1.0", Toast.LENGTH_SHORT).show();
         }
         return super.onOptionsItemSelected(item);
     }

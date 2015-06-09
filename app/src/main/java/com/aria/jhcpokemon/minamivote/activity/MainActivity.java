@@ -8,6 +8,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.aria.jhcpokemon.minamivote.R;
 import com.aria.jhcpokemon.minamivote.adapter.MyAdapter;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_about) {
-            return true;
+            Toast.makeText(this,"Version:1.0",Toast.LENGTH_SHORT).show();
         }
 
         return super.onOptionsItemSelected(item);
